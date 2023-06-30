@@ -1,0 +1,180 @@
+﻿@inject IAdminService AdminService
+
+<div class="d-xl-flex justify-content-center">
+    <EditForm Model="@Model" OnValidSubmit="@OnFormSubmit" class="mb-5 border border-1 border-secondary p-2 w-25">
+        <DataAnnotationsValidator />
+        <h4>@Page</h4>
+        <div class="mb-3">
+            @if (Page.Equals(PageType.Delete))
+            {
+                <InputText id="title" class="form-control me-2" @bind-Value="Model.Title" disabled placeholder="Title"></InputText>
+            }
+            else
+            {
+                <InputText id="title" class="form-control me-2" @bind-Value="Model.Title" placeholder="Title"></InputText>
+            }
+            <ValidationMessage For="@(() => Model.Title)" />
+        </div>
+        @if (!Page.Equals(PageType.Delete))
+        {   
+            <div class="mb-3">
+                <InputDate id="Released" class="form-control me-2" @bind-Value="Model.Released" placeholder="Released"></InputDate>
+                <ValidationMessage For="@(() => Model.Released)" />
+            </div>
+            <div class="mb-3">
+                <InputText id="description" class="form-control me-2" @bind-Value="Model.Description" placeholder="Description"></InputText>
+                <ValidationMessage For="@(() => Model.Description)" />
+            </div>
+            @*<div class="mb-3">
+                <InputText id="MarqueeUrl" class="form-control me-2" @bind-Value="Model.MarqueeUrl" placeholder="MarqueeUrl"></InputText>
+                <ValidationMessage For="@(() => Model.MarqueeUrl)" />
+            </div>
+            <div class="mb-3">
+                <InputText id="ThumbUrl" class="form-control me-2" @bind-Value="Model.ThumbUrl" placeholder="ThumbUrl"></InputText>
+                <ValidationMessage For="@(() => Model.ThumbUrl)" />
+            </div>*@
+            <div class="mb-3">
+                <InputText id="image-url" class="form-control me-2" @bind-Value="Model.FilmUrl" placeholder="Film Url"></InputText>
+                <ValidationMessage For="@(() => Model.FilmUrl)" />
+            </div>
+            <InputSelect @bind-Value="SelectedValuesGenres" class=" form-select form-select-lg mb-3  multiple">
+                @foreach (var genre in GenresToDisplay)
+                {
+                    <option value="@genre.Id">@genre.Name</option>
+                }
+            </InputSelect>
+
+            
+            <InputSelect @bind-Value="Model.DirectorId" class="form-control mb-3">
+                <option value=0>Director ...</option>
+                @foreach (var director in Directors)
+                {
+                    <option value="@director.Id">@director.Name</option>
+                }
+            </InputSelect>
+            @if (Page.Equals(PageType.Edit))
+            {
+                <InputSelect @bind-Value="SelectedValuesSimilarFilms" class=" form-select form-select-lg mb-3  multiple">
+                    @foreach (var film in SimilarFilmsToDisplay)
+                    {
+                        <option value="@film.Id">@film.Title</option>
+                    }
+                </InputSelect>
+            }
+            
+            <div class="mb-3">
+                <label>
+                    <InputCheckbox @bind-Value="Model.Free" />
+                    Free Course
+                </label>
+            </div>
+        }
+        <button type="submit" class="btn btn-@(Page.Equals(PageType.Delete) ? "danger" : "primary") rounded-0">@(Page.Equals(PageType.Edit) ? "Save" : @Page)</button>
+        
+    </EditForm>
+</div>
+
+
+
+@code {
+    [Parameter] public FilmDTO Model { get; set; } = new();
+
+    [Parameter] public string Page { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback<string> OnChange { get; set; }
+
+    public List<DirectorDTO> Directors { get; set; } = new();
+    public List<GenreEditDTO> GenresToDisplay { get; set; } = new();
+    public List<FilmDTO> SimilarFilms { get; set; } = new();
+    public List<FilmDTO> SimilarFilmsToDisplay { get; set; } = new();
+    public List<GenreDTO> AddedGenres { get; set; } = new();
+    public int[] SelectedValuesGenres { get; set; } = new int[] { };
+    public int[] SelectedValuesSimilarFilms { get; set; } = new int[] { };
+
+    public List<int> selected = new();
+    public List<int> selectedSimilar = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+
+        if(Page.Equals(PageType.Edit)){
+
+            selected.Clear();
+            selectedSimilar.Clear();
+            SimilarFilmsToDisplay.Clear();
+
+            foreach (var similar in Model.SimilarFilms)
+            {
+
+                selectedSimilar.Add(similar.SimilarFilmId);
+
+            }
+            foreach (var genre in Model.Genres)
+            {
+                selected.Add(genre.Id);
+            }
+
+            SelectedValuesGenres = selected.ToArray();
+            SelectedValuesSimilarFilms = selectedSimilar.ToArray();
+
+        }
+
+        foreach (var m in SimilarFilms.Where(m => m.Id != Model.Id))
+        {
+
+            SimilarFilmsToDisplay.Add(m);
+        }
+
+    }
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        Directors = await AdminService.GetAsync<DirectorDTO>("Director");
+
+        GenresToDisplay = await AdminService.GetAsync<GenreEditDTO>("Genres");
+
+
+        SimilarFilms = await AdminService.GetAsync<FilmDTO>("films");
+
+
+
+
+    }
+
+    private async Task OnFormSubmit()
+    {
+        try
+        {   
+
+
+            if (Page.Equals(PageType.Create)){
+                //Model.SimilarIds = SelectedValuesSimilarFilms;
+                Model.GenreIds = SelectedValuesGenres;
+                Model.MarqueeUrl = "/images/default.jpg";
+                Model.ThumbUrl = "/images/defaultThumb.jpg";
+                await AdminService.CreateAsync<FilmDTO>("films", Model);
+            }
+
+
+
+            else if (Page.Equals(PageType.Edit)){
+
+
+                Model.SimilarIds = SelectedValuesSimilarFilms;
+                Model.GenreIds = SelectedValuesGenres;
+                await AdminService.EditAsync<FilmDTO>($"films/{Model.Id}", Model);
+            }
+            else if (Page.Equals(PageType.Delete)) { await AdminService.DeleteAsync<FilmDTO>($"films/{Model.Id}");
+            }
+
+            await OnChange.InvokeAsync("");
+
+        }
+        catch
+        {
+            await OnChange.InvokeAsync("Couldn't create/edit/delete the film.");
+        }
+    }
+}

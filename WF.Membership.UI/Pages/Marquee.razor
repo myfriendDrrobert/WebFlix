@@ -1,0 +1,24 @@
+﻿<div class="marquee" style="background-image:url('@Film.MarqueeUrl');" >
+    <div class="titlebadge"  ><h4>@Film.Title</h4></div>
+    <div class="play-container">
+        
+        <div class="play-btn">
+            <a href="/FilmPlayer/@Film.Id"><i class="oi oi-media-play"></i></a>
+        </div>
+    </div>
+
+
+</div>
+
+
+
+
+
+@code {
+    [Parameter] public FilmDTO Film { get; set; }
+    [Parameter] public List<string>? Titles { get; set; }
+    
+
+
+    
+}

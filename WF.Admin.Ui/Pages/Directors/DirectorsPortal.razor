@@ -1,0 +1,81 @@
+﻿@inject IAdminService AdminService
+
+@if (!string.IsNullOrEmpty(Alert))
+{
+    <div class="alert alert-danger" role="alert">
+        <a href="#" class="alert-link">@Alert</a>
+        <button type="button" @onclick="CloseAlert" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Navigation == PageType.Create)
+{
+    <ChangeDirector Page="@Navigation" OnChange="OnChange"></ChangeDirector>
+}
+@if (Navigation == PageType.Delete || Navigation == PageType.Edit)
+{
+    <ChangeDirector Page="@Navigation" OnChange="OnChange" Model="Director"></ChangeDirector>
+}
+
+<div class="d-flex">
+    <a class=" btn btn-outline-primary rounded-1 me-1" href="/">Home</a>
+    <button type="button" class=" btn btn-outline-dark rounded-1 me-1" @onclick="()=>ChangePageType(PageType.Index)">@PageType.Index</button>
+    <button type="button" class=" btn btn-outline-success rounded-1" @onclick="()=>ChangePageType(PageType.Create)">@PageType.Create</button>
+</div>
+
+<DirectorsIndex OnClick="OnClick" Model="Model"></DirectorsIndex>
+
+
+
+@code {
+
+
+    string Alert { get; set; } = "test";
+
+    string Navigation { get; set; } = PageType.Index;
+    List<DirectorDTO> Model { get; set; } = new();
+    public DirectorDTO Director { get; set; } = new();
+
+    public void ChangePageType(string pageType)
+    {
+        Navigation = pageType;
+    }
+
+    public void CloseAlert()
+    {
+        Alert = "";
+    }
+
+    async Task OnClick(ClickModel model)
+    {
+        if (model.pageType.Equals(PageType.Edit) || model.pageType.Equals(PageType.Delete))
+            Director = await AdminService.SingleAsync<DirectorDTO>($"Director/{model.id}") ?? new();
+
+        ChangePageType(model.pageType);
+    }
+
+    async Task OnChange(string alert)
+    {
+        try
+        {
+            Alert = alert;
+            Model = await AdminService.GetAsync<DirectorDTO>("Director");
+            ChangePageType(PageType.Index);
+        }
+        catch
+        {
+            Alert = "Couldn't create/edit/delete the director.";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Alert = "";
+        Model = await AdminService.GetAsync<DirectorDTO>("Director");
+
+
+
+
+    }
+}

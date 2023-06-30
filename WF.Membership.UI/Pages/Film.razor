@@ -1,0 +1,64 @@
+﻿@inject IMembershipService membershipService
+
+@page "/film/{Id:int}"
+@inject NavigationManager NavigationManager
+<body class="main-body" style="width:800px">
+<Marquee Film="Model" ></Marquee>
+
+<div class="d-flex flex-wrap justify-content-center mt-2">
+    @foreach (var genre in Genres)
+    {
+        <h4><span class="badge bg-secondary me-2">@genre</span></h4>
+    }
+</div>
+<p>@Model.Description</p>
+<p>Director: @Model.Director</p>
+<p>Release Date: @Model.Released.ToShortDateString()</p>
+    
+    <a href="/" class="btn btn-primary rounded-1 mb-3"><i class="oi oi-arrow-left"></i><span class="vertical-align">Back to Index</span></a>
+    @if(SimilarFilms.Count > 0){
+        <h4 class="mb-2">You might also enjoy:</h4>
+    }
+<div class=" d-flex justify-content-start">
+    
+    @foreach(var film in SimilarFilms)
+    {
+        <SimilarFilmCard Film="film"></SimilarFilmCard>
+    
+    }
+</div>
+</body>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    public FilmDTO Model { get; set; } = new();
+
+    public List<string> Genres { get; set; } = new();
+
+    public List<FilmReadDTO> SimilarFilms { get; set; } = new();
+
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        Model = await membershipService.GetFilmAsync(Id);
+        SimilarFilms.Clear();
+        Genres.Clear();
+        @foreach (var film in Model.SimilarFilms)
+        {
+            
+            SimilarFilms.Add(film.SimilarFilm);
+        }
+
+        @foreach (var genre in Model.Genres)
+        {
+            
+            Genres.Add(genre.Name);
+        }
+    }
+
+    private void Navigate()
+    {
+        NavigationManager.NavigateTo("film");
+    }
+}

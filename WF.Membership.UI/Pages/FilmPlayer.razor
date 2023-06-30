@@ -1,0 +1,39 @@
+﻿@page "/FilmPlayer/{Id:int}"
+@inject IMembershipService membershipService
+
+
+<div class="d-flex flex-column justify-content-center">
+
+    <a class="btn btn-primary rounded-0" href="/film/@Id">
+        <i class="oi oi-arrow-left"></i><span > Back to @Model.Title</span>
+    </a>
+        @if (Model.FilmUrl != null && Model is not null)
+        {
+                <div class="video-player">
+                    <iframe src="@Model.FilmUrl"  frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+        }
+        <div class="card-body justify-content-center">
+            <h2>@Model.Title</h2>
+            <h4>@Model.Director</h4>
+            <hr class="m-0">
+            @Model.Description 
+
+        </div>
+</div>
+
+
+@code {
+
+    [Parameter] public int Id { get; set; }
+
+    public FilmDTO Model { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Model = await membershipService.GetFilmAsync(Id);
+
+    }
+
+}

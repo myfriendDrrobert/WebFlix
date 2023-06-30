@@ -1,0 +1,17 @@
+﻿<div class="card m-2 border-1 border-primary " style="width: 200px; height:auto">
+    <a href="film/@Film.Id"><div class="img-thumbnail">
+        <img src="@Film.ThumbUrl" class="card-img-top" />
+        </div>
+    </a>
+    <div class="card-header bg-dark text-white"><h6>@Film.Title</h6></div>
+    <div class="card-body">@Film.Description.Truncate(35)</div>
+    <div class="card-footer d-inline-flex justify-content-center">
+    <a href="film/@Film.Id" class="btn btn-primary rounded-1">View Film</a>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter] public FilmReadDTO Film { get; set; }
+}

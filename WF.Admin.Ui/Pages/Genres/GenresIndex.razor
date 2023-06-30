@@ -1,0 +1,37 @@
+﻿<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            @*<th scope="col">Description</th>
+            <th scope="col">Free?</th>
+            <th scope="col">Instructor</th>
+            <th scope="col">Genre</th>*@
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td>@i.Name</td>
+                @*<td>@i.Description.Truncate(15)</td>
+            <td>@(i.Free ? "Free" : "")</td>
+            <td>@i.Director</td>
+            <td>@((i.Genres.Any()) ? i.Genres[0] : "Empty")</td>*@
+                <td>
+                    <div class="d-flex me-1 justify-content-end">
+                        <button class="btn btn-outline-primary rounded-0 me-1" @onclick="@(() => OnClick.InvokeAsync(new ClickModel(PageType.Edit, i.Id)))">Edit</button>
+                        <button class="btn btn-outline-danger rounded-0" @onclick="@(() => OnClick.InvokeAsync(new ClickModel(PageType.Delete, i.Id)))">Delete</button>
+                    </div>
+                </td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+@code {
+    [Parameter] public List<GenreDTO> Model { get; set; } = new List<GenreDTO>();
+
+    [Parameter] public EventCallback<ClickModel> OnClick { get; set; }
+}

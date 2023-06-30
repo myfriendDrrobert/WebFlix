@@ -1,0 +1,45 @@
+﻿
+<table class="table">
+    <thead>
+    <tr>
+      <th scope="col">Title</th>
+      <th scope="col">Description</th>      
+      <th scope="col">Instructor</th>
+      <th scope="col">Release Year</th>
+      
+    </tr>
+  </thead>
+  <tbody>
+        @foreach (var i in Model.OrderBy(f => f.Title))
+        {
+                <tr>
+                    <td>@i.Title</td>
+                    <td>@i.Description.Truncate(15)</td>                 
+                    <td>@i.Director</td>
+                    <td>@i.Released.ToShortDateString()</td>
+                
+                    <td>
+                        <div class="d-flex me-1 justify-content-end">
+                            <button class="btn btn-outline-primary rounded-0 me-1" @onclick="@(() => OnClick.InvokeAsync(new ClickModel(PageType.Edit, i.Id)))">Edit</button>
+                            <button class="btn btn-outline-danger rounded-0" @onclick="@(() => OnClick.InvokeAsync(new ClickModel(PageType.Delete, i.Id)))">Delete</button>
+                        </div>
+                    </td>
+                </tr>
+        }
+
+  </tbody>
+  </table>
+
+
+@code {
+    [Parameter] public List<FilmDTO> Model { get; set; } = new List<FilmDTO>();
+
+    [Parameter] public EventCallback<ClickModel> OnClick { get; set; }
+
+    //public async Task<string> GetTitle(int id)
+    //{
+    //    var Film = await AdminService.SingleAsync<FilmDTO>($"films/{id}");
+
+    //    return Film.Title;
+    //}
+}

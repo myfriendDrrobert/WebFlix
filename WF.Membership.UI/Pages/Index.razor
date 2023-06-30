@@ -1,0 +1,32 @@
+﻿@inject IMembershipService membershipService
+@page "/"
+
+<PageTitle>Dashboard</PageTitle>
+<body>
+<h1 class="text-center">Web-Flix</h1>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    
+        @foreach (var film in Films.OrderBy(f => f.Title))
+        {
+
+            <FilmCardPartial Film="film"></FilmCardPartial>
+        }
+   
+</div>
+</body>
+@code{
+    public List<FilmDTO> Films { get; set; } = new();
+
+    
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Films = await membershipService.GetFilmsAsync();    
+       
+    }
+
+}
+

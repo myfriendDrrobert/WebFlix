@@ -1,0 +1,81 @@
+﻿@inject IAdminService AdminService
+
+@if (!string.IsNullOrEmpty(Alert))
+{
+    <div class="alert alert-danger" role="alert">
+        <a href="#" class="alert-link">@Alert</a>
+        <button type="button" @onclick="CloseAlert" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Navigation == PageType.Create)
+{
+    <ChangeGenre Page="@Navigation" OnChange="OnChange"></ChangeGenre>
+}
+@if (Navigation == PageType.Delete || Navigation == PageType.Edit)
+{
+    <ChangeGenre Page="@Navigation" OnChange="OnChange" Model="Genre"></ChangeGenre>
+}
+
+<div class="d-flex">
+    <a class=" btn btn-outline-primary rounded-1 me-1" href="/">Home</a>
+    <button type="button" class=" btn btn-outline-dark rounded-1 me-1" @onclick="()=>ChangePageType(PageType.Index)">@PageType.Index</button>
+    <button type="button" class=" btn btn-outline-success rounded-1" @onclick="()=>ChangePageType(PageType.Create)">@PageType.Create</button>
+</div>
+
+<GenresIndex OnClick="OnClick" Model="Model"></GenresIndex>
+
+
+
+@code {
+
+
+    string Alert { get; set; } = "test";
+
+    string Navigation { get; set; } = PageType.Index;
+    List<GenreDTO> Model { get; set; } = new();
+    public GenreDTO Genre { get; set; } = new();
+
+    public void ChangePageType(string pageType)
+    {
+        Navigation = pageType;
+    }
+
+    public void CloseAlert()
+    {
+        Alert = "";
+    }
+
+    async Task OnClick(ClickModel model)
+    {
+        if (model.pageType.Equals(PageType.Edit) || model.pageType.Equals(PageType.Delete))
+            Genre = await AdminService.SingleAsync<GenreDTO>($"Genres/{model.id}") ?? new();
+
+        ChangePageType(model.pageType);
+    }
+
+    async Task OnChange(string alert)
+    {
+        try
+        {
+            Alert = alert;
+            Model = await AdminService.GetAsync<GenreDTO>("Genres");
+            ChangePageType(PageType.Index);
+        }
+        catch
+        {
+            Alert = "Couldn't create/edit/delete the director.";
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        Alert = "";
+        Model = await AdminService.GetAsync<GenreDTO>("Genres");
+
+
+
+
+    }
+}
